@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: skillbridge-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillbridge_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - skillbridge-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Server Development
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: skillbridge-server-dev
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/skillbridge_dev
+      BETTER_AUTH_SECRET: dev-secret-key-minimum-32-characters
+      BETTER_AUTH_URL: http://localhost:9000
+      PORT: 9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - skillbridge-dev-network
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Client Development
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      target: deps
+    container_name: skillbridge-client-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:9000
+    networks:
+      - skillbridge-dev-network
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  skillbridge-dev-network:
+    driver: bridge

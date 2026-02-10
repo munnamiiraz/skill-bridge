@@ -33,7 +33,7 @@ copy .env.docker .env
 docker-compose up --build -d
 echo Production environment started!
 echo Client: http://localhost:3000
-echo Server: http://localhost:10000
+echo Server: http://localhost:9000
 echo Nginx: http://localhost:80
 goto menu
 

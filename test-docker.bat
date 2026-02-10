@@ -18,7 +18,7 @@ if %errorlevel% equ 0 (
 echo.
 
 echo [3/5] Testing Server API...
-curl -s http://localhost:10000/health
+curl -s http://localhost:9000/health
 if %errorlevel% equ 0 (
     echo.
     echo ✓ Server is healthy
@@ -54,7 +54,7 @@ echo.
 echo Access your application:
 echo   - Main App (Nginx): http://localhost
 echo   - Client Direct:    http://localhost:3000
-echo   - Server API:       http://localhost:10000
+echo   - Server API:       http://localhost:9000
 echo.
 echo To view logs:
 echo   docker logs skillbridge-server

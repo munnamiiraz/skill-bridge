@@ -31,20 +31,18 @@ services:
     container_name: skillbridge-server
     restart: unless-stopped
     ports:
-      - "10000:10000"
+      - "9000:9000"
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-password}@postgres:5432/skillbridge
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-your-secret-key-here}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:10000}
-      PORT: 10000
-    depends_on:
-      postgres:
-        condition: service_healthy
+      DATABASE_URL: postgresql://neondb_owner:npg_fBWwPUq6Hl8Z@ep-cold-leaf-a87uf74w-pooler.eastus2.azure.neon.tech/neondb?sslmode=require
+      BETTER_AUTH_SECRET: n4EFsjtK2phFIu4dB5tC3E7PBlwE5TWt
+      BETTER_AUTH_URL: http://localhost:9000
+      APP_URL: http://localhost:3000
+      PORT: 9000
     networks:
       - skillbridge-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:10000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:9000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -54,16 +52,16 @@ services:
     build: 
       context: ./client
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:9000
     container_name: skillbridge-client
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:10000
-    depends_on:
-      server:
-        condition: service_healthy
+      NEXT_PUBLIC_API_URL: http://localhost:9000
+      INTERNAL_API_URL: http://server:9000
     networks:
       - skillbridge-network
 
